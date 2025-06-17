@@ -2,5 +2,5 @@
 ccxt>=4.4.88
 pandas>=2.0.0
 numpy>=1.25.0
-TA-Lib==0.4.28
+TA-Lib-binary
 streamlit>=1.24.0
