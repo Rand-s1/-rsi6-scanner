@@ -1,5 +1,5 @@
 import requests
-import pandas_ta as ta  # 替换 talib
+import ta  # 替换 talib
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -124,12 +124,12 @@ def fetch_all_tickers(base: str) -> Dict[str, float]:
         return {}
 
 def calculate_rsi(df: pd.DataFrame) -> float:
-    """计算 RSI6 - 使用 pandas_ta"""
+    """计算 RSI6 - 使用 ta 库"""
     try:
         symbol = df['symbol'].iloc[0] if isinstance(df['symbol'], pd.Series) else df['symbol']
         logger.info(f"calculate_rsi: 交易对: {symbol}")
         
-        # 使用 pandas_ta 计算 RSI
+        # 使用 ta 库计算 RSI
         close_series = pd.Series(df["close"].astype(float))
         logger.info(f"calculate_rsi: close 数据长度: {len(close_series)}")
         
@@ -137,9 +137,8 @@ def calculate_rsi(df: pd.DataFrame) -> float:
             logger.warning(f"{symbol} 数据不足: {len(close_series)} 根K线")
             return None
             
-        # pandas_ta.rsi 计算 RSI
-        rsi_series = ta.rsi(close_series, length=RSI_PERIOD)
-        rsi = rsi_series.iloc[-1]  # 获取最后一个值
+        # ta.momentum.rsi 计算 RSI
+        rsi = ta.momentum.rsi(close_series, window=RSI_PERIOD).iloc[-1]
         
         logger.info(f"calculate_rsi: RSI 计算结果: {rsi}")
         return rsi
