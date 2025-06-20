@@ -770,7 +770,6 @@ def main():
     st.markdown("""
     <div style='text-align: center; color: #666; padding: 1rem;'>
         <p>📈 RSI6 扫描器 Pro | 🚀 专业级量化交易工具</p>
-        <p>⚠️ 投资有风险，交易需谨慎。本工具仅供参考，不构成投资建议。</p>
     </div>
     """, unsafe_allow_html=True)
 
