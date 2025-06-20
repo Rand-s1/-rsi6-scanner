@@ -367,48 +367,41 @@ def fetch_candles_wrapper(args) -> tuple:
     return symbol, df
 
 def create_statistics_cards(results: List[dict], total_symbols: int):
-    """创建统计卡片"""
-    col1, col2, col3, col4 = st.columns(4)
-    
+    """创建统计信息 - 简洁一行版本"""
     oversold = len([r for r in results if r["rsi6"] < 30])
     overbought = len([r for r in results if r["rsi6"] > 70])
     gainers = len([r for r in results if r["change (%)"] > 0])
     
+    # 使用metrics显示，一行4个指标
+    col1, col2, col3, col4 = st.columns(4)
+    
     with col1:
-        st.markdown(f"""
-        <div class="stat-card">
-            <h3 style="color: #4ecdc4; margin: 0;">📊 总扫描数</h3>
-            <h2 style="margin: 0.5rem 0;">{total_symbols}</h2>
-            <p style="margin: 0; color: #666;">个交易对</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label="📊 总扫描数",
+            value=f"{total_symbols}",
+            help="扫描的交易对总数"
+        )
         
     with col2:
-        st.markdown(f"""
-        <div class="stat-card">
-            <h3 style="color: #ff6b6b; margin: 0;">🔥 超买信号</h3>
-            <h2 style="margin: 0.5rem 0;">{overbought}</h2>
-            <p style="margin: 0; color: #666;">RSI > 70</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label="🔥 超买信号",
+            value=f"{overbought}",
+            help="RSI > 70的币种数量"
+        )
         
     with col3:
-        st.markdown(f"""
-        <div class="stat-card">
-            <h3 style="color: #51cf66; margin: 0;">💎 超卖信号</h3>
-            <h2 style="margin: 0.5rem 0;">{oversold}</h2>
-            <p style="margin: 0; color: #666;">RSI < 30</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label="💎 超卖信号", 
+            value=f"{oversold}",
+            help="RSI < 30的币种数量"
+        )
         
     with col4:
-        st.markdown(f"""
-        <div class="stat-card">
-            <h3 style="color: #ffd43b; margin: 0;">📈 上涨币种</h3>
-            <h2 style="margin: 0.5rem 0;">{gainers}</h2>
-            <p style="margin: 0; color: #666;">24h涨幅 > 0</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label="📈 上涨币种",
+            value=f"{gainers}",
+            help="24h涨幅 > 0的币种数量"
+        )
 
 def create_rsi_distribution_chart(results: List[dict]):
     """创建RSI分布图表"""
