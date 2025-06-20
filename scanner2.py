@@ -255,24 +255,79 @@ def fetch_candles(base: str, symbol: str, granularity: str) -> pd.DataFrame:
         return pd.DataFrame()
 
 def fetch_all_tickers(base: str) -> Dict[str, dict]:
-    """批量获取ticker数据"""
+    """批量获取ticker数据 - 修复版本"""
     url = f"{base}/api/v2/mix/market/tickers"
     params = {"productType": Config.PRODUCT_TYPE}
     
     try:
         r = requests.get(url, params=params, timeout=5)
         j = r.json()
+        
+        logger.info(f"Ticker API响应: code={j.get('code')}, msg={j.get('msg')}")
+        
         if j.get("code") != "00000":
+            logger.error(f"API返回错误: {j}")
             return {}
             
+        if not isinstance(j.get("data"), list):
+            logger.error(f"API数据格式错误: {type(j.get('data'))}")
+            return {}
+        
         tickers = {}
         for item in j["data"]:
-            tickers[item["symbol"]] = {
-                "change24h": float(item["change24h"]) * 100,
-                "volume": float(item["baseVolume"]),
-                "price": float(item["close"])
-            }
+            try:
+                # 打印第一个item的结构，用于调试
+                if len(tickers) == 0:
+                    logger.info(f"Ticker数据结构示例: {list(item.keys())}")
+                
+                # 兼容不同的字段名
+                symbol = item.get("symbol", "")
+                if not symbol:
+                    continue
+                
+                # 尝试不同的字段名
+                change24h = 0.0
+                if "change24h" in item:
+                    change24h = float(item["change24h"]) * 100
+                elif "chgUtc" in item:
+                    change24h = float(item["chgUtc"]) * 100
+                elif "changeUtc24h" in item:
+                    change24h = float(item["changeUtc24h"]) * 100
+                
+                # 成交量字段
+                volume = 0.0
+                if "baseVolume" in item:
+                    volume = float(item["baseVolume"])
+                elif "baseVol" in item:
+                    volume = float(item["baseVol"])
+                elif "vol24h" in item:
+                    volume = float(item["vol24h"])
+                
+                # 价格字段
+                price = 0.0
+                if "close" in item:
+                    price = float(item["close"])
+                elif "last" in item:
+                    price = float(item["last"])
+                elif "lastPr" in item:
+                    price = float(item["lastPr"])
+                
+                tickers[symbol] = {
+                    "change24h": change24h,
+                    "volume": volume,
+                    "price": price
+                }
+                
+            except (ValueError, KeyError, TypeError) as e:
+                logger.warning(f"处理ticker数据失败 {item.get('symbol', 'unknown')}: {e}")
+                continue
+        
+        logger.info(f"成功获取 {len(tickers)} 个ticker数据")
         return tickers
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"网络请求失败: {e}")
+        return {}
     except Exception as e:
         logger.error(f"获取ticker数据失败: {e}")
         return {}
@@ -460,7 +515,7 @@ def format_dataframe(df: pd.DataFrame, is_gainer: bool = True) -> pd.DataFrame:
     return df_formatted[["交易对", "24h涨跌", "RSI6", "K线数", "备注"]]
 
 def scan_symbols(base: str, symbols: List[str], granularity: str, rsi_low: float, rsi_high: float, min_volume: float = 0) -> Tuple[List[dict], dict]:
-    """扫描交易对"""
+    """扫描交易对 - 修复版本"""
     start_time = time.time()
     results = []
     
@@ -468,8 +523,8 @@ def scan_symbols(base: str, symbols: List[str], granularity: str, rsi_low: float
     with st.spinner("📊 正在获取市场数据..."):
         tickers = fetch_all_tickers(base)
         if not tickers:
-            st.error("❌ 无法获取市场数据")
-            return [], {}
+            st.warning("⚠️ 无法获取完整的市场数据，将使用默认值")
+            tickers = {}  # 继续执行，但使用空字典
     
     # 进度条容器
     progress_container = st.empty()
@@ -515,7 +570,12 @@ def scan_symbols(base: str, symbols: List[str], granularity: str, rsi_low: float
                     insufficient_data.append(symbol)
                     continue
                 
-                ticker_data = tickers.get(symbol, {"change24h": 0, "volume": 0, "price": 0})
+                # 使用默认值如果ticker数据不可用
+                ticker_data = tickers.get(symbol, {
+                    "change24h": 0, 
+                    "volume": 0, 
+                    "price": 0
+                })
                 
                 # 应用成交量过滤
                 if ticker_data["volume"] < min_volume:
@@ -542,6 +602,7 @@ def scan_symbols(base: str, symbols: List[str], granularity: str, rsi_low: float
                 logger.warning(f"{symbol} 处理失败: {e}")
                 continue
     
+    # 确保scan_stats包含所有必需的字段
     scan_stats = {
         "scan_time": time.time() - start_time,
         "total_symbols": total_symbols,
