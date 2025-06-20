@@ -644,7 +644,7 @@ def main():
             st.markdown("""
             ### 🎯 使用指南
             
-            **鹅的RSI6扫描器**是一个专业的技术分析工具，帮助您快速找到具有极端RSI值的交易机会：
+            **RSI6扫描器**是一个专业的技术分析工具，帮助您快速找到具有极端RSI值的交易机会：
             
             #### 📊 功能特点：
             - 🔄 **实时扫描**: 并行处理所有USDT永续合约
@@ -694,23 +694,7 @@ def main():
             # 显示统计卡片
             create_statistics_cards(results, scan_stats['total_symbols'])
             
-            # 显示图表
-            if show_charts and results:
-                st.markdown("### 📊 数据分析")
-                
-                chart_col1, chart_col2 = st.columns(2)
-                
-                with chart_col1:
-                    rsi_chart = create_rsi_distribution_chart(results)
-                    if rsi_chart:
-                        st.plotly_chart(rsi_chart, use_container_width=True)
-                
-                with chart_col2:
-                    scatter_chart = create_scatter_plot(results)
-                    if scatter_chart:
-                        st.plotly_chart(scatter_chart, use_container_width=True)
-            
-            # 显示结果表格
+            # 🔥 第一部分：显示结果表格
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             # 超买区域（涨幅榜）
@@ -750,6 +734,23 @@ def main():
                 )
             else:
                 st.info("🤔 当前没有符合条件的超卖信号")
+            
+            # 📊 第二部分：显示图表分析（移到后面）
+            if show_charts and results:
+                st.markdown("---")  # 添加分隔线
+                st.markdown("### 📊 数据分析")
+                
+                chart_col1, chart_col2 = st.columns(2)
+                
+                with chart_col1:
+                    rsi_chart = create_rsi_distribution_chart(results)
+                    if rsi_chart:
+                        st.plotly_chart(rsi_chart, use_container_width=True)
+                
+                with chart_col2:
+                    scatter_chart = create_scatter_plot(results)
+                    if scatter_chart:
+                        st.plotly_chart(scatter_chart, use_container_width=True)
                 
             # 扫描信息
             with st.expander("ℹ️ 扫描详情"):
@@ -768,6 +769,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #666; padding: 1rem;'>
+        <p>📈 RSI6 扫描器 Pro | 🚀 专业级量化交易工具</p>
         <p>⚠️ 投资有风险，交易需谨慎。本工具仅供参考，不构成投资建议。</p>
     </div>
     """, unsafe_allow_html=True)
