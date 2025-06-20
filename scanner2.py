@@ -227,13 +227,13 @@ def scan_symbols(base: str, symbols: List[str], granularity: str, rsi_low: float
 def main():
     st.set_page_config(page_title="鹅的 RSI6 扫描器 (BitgetUSDT 永续合约)", layout="wide")
     st.title("鹅的 RSI6 扫描器")
-    st.markdown("扫描 Bitget USDT 永续合约，获取 4H 或 1D 时间框架下 RSI6 满足条件的交易对。")
+    st.markdown("扫描 Bitget USDT 永续合约，获取 1H、4H 或 1D 时间框架下 RSI6 满足条件的交易对。")
 
     # 输入区域
     st.subheader("设置参数")
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
-        timeframe = st.selectbox("时间框架", ["4H", "1D"], index=0)
+        timeframe = st.selectbox("时间框架", ["1H", "4H", "1D"], index=1)  # 默认选择4H
     with col2:
         rsi_low = st.number_input("RSI6 下限", min_value=0.0, max_value=100.0, value=10.0, step=1.0)
     with col3:
